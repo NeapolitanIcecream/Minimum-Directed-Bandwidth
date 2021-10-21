@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 
+namespace Graph {
 class Vertex {
 public:
     uint32_t id;
@@ -23,11 +24,6 @@ public:
     void AddNext(std::shared_ptr<Vertex> v) {
         next.push_back(v);
         unvisitedNextCount++;
-    }
-
-    void Reset() {
-        visited = false;
-        order = -1;
     }
 
     void Print() {
@@ -58,7 +54,9 @@ public:
     }
 
     void Visit() {
+        static uint32_t globalOrder = 0;
         visited = true;
+        order = globalOrder++;
         for (auto v : prev) {
             v->unvisitedNextCount--;
         }
@@ -74,6 +72,15 @@ public:
 
     bool MoreThanOneNextUnvisited() {
         return unvisitedNextCount > 1;
+    }
+
+    bool AllPrevVisited() {
+        for (auto v : prev) {
+            if (!v->visited) {
+                return false;
+            }
+        }
+        return true;
     }
 };
 
@@ -115,3 +122,4 @@ VertexPtr Copy(VertexPtr v) {
     v->AddNext(result);
     return result;
 }
+} // namespace graph
