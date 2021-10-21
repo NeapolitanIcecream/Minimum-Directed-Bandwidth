@@ -1,16 +1,18 @@
-#include <vertex.h>
+#include "vertex.h"
 
 std::vector<Graph::VertexPtr> graph;
-std::queue<Graph::VertexPtr> visitedButHasUnvisitedNext;
+std::deque<Graph::VertexPtr> visitedButHasUnvisitedNext;
 std::vector<Graph::VertexPtr> visited;
 const uint32_t maxBandwidth = 8;
+void CheckCopy(uint32_t order);
+void Visit(Graph::VertexPtr v);
 
 void CheckCopy(uint32_t order) {
     auto checkOrder = order - maxBandwidth + 1;
     if (checkOrder >= 0 && visited[checkOrder] == visitedButHasUnvisitedNext.front() &&
-        visitedButHasUnvisitedNext.front().MoreThanOneNextUnvisited()) {
+        visitedButHasUnvisitedNext.front()->MoreThanOneNextUnvisited()) {
         auto copy = Graph::Copy(visitedButHasUnvisitedNext.front());
-        visitedButHasUnvisitedNext.pop();
+        visitedButHasUnvisitedNext.pop_front();
         Visit(copy);
     }
 }
@@ -19,13 +21,13 @@ void Visit(Graph::VertexPtr v) {
     v->Visit();
     visited.push_back(v);
     if (!v->AllNextVisited()) {
-        visitedButHasUnvisitedNext.push(v);
+        visitedButHasUnvisitedNext.push_back(v);
     }
     CheckCopy(v->order);
     while (!visitedButHasUnvisitedNext.empty()) {
         bool found = false;
         for (auto i : visitedButHasUnvisitedNext) {
-            for (auto j : i->UnvisitedNext()) {
+            for (auto j : i->GetUnvisitedNext()) {
                 if (j->AllPrevVisited()) {
                     Visit(j);
                     found = true;

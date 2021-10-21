@@ -31,5 +31,19 @@
 *.out
 *.app
 
-# Vscode
+# vscode
 .vscode
+
+# cmake
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+CMakeLists.txt
+
+# build
+build
+build.sh
+mdb
+
+# make
+Makefile

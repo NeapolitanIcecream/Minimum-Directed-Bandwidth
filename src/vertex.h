@@ -1,11 +1,14 @@
-#include <bits/stdc++.h>
+#include <memory>
+#include <vector>
+#include <iostream>
+#include <queue>
 
 namespace Graph {
 class Vertex {
 public:
     uint32_t id;
-    std::vector<std::shared_ptr<Vertex> > prev;
-    std::vector<std::shared_ptr<Vertex> > next;
+    std::vector<std::shared_ptr<Vertex>> prev;
+    std::vector<std::shared_ptr<Vertex>> next;
     bool visited;
     uint32_t order;
     uint32_t unvisitedNextCount;
@@ -43,8 +46,8 @@ public:
         this->order = order;
     }
 
-    std::vector<std::shared_ptr<Vertex> > GetUnvisitedNext() {
-        std::vector<std::shared_ptr<Vertex> > result;
+    std::vector<std::shared_ptr<Vertex>> GetUnvisitedNext() {
+        std::vector<std::shared_ptr<Vertex>> result;
         for (auto v : next) {
             if (!v->visited) {
                 result.push_back(v);
@@ -113,9 +116,9 @@ VertexPtr Copy(VertexPtr v) {
     VertexPtr result(new Vertex());
     result->AddPrev(v);
     for (auto i = v->next.begin(); i != v->next.end(); i++) {
-        if (!*i->visited) {
+        if (!(*i)->visited) {
             v->next.erase(i);
-            *i->RemovePrev(v);
+            RemovePrev(*i, v);
             AddEdge(result, *i);
         }
     }
