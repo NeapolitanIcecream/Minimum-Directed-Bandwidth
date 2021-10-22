@@ -152,11 +152,11 @@ public:
     }
 
     void AddEdge(uint32_t v1, uint32_t v2) {
-        AddEdge(vertices[v1], vertices[v2]);
+        mdb::AddEdge(vertices[v1], vertices[v2]);
     }
 
     void Copy(uint32_t v) {
-        vertices.push_back(Copy(vertices[v]));
+        vertices.push_back(mdb::Copy(vertices[v]));
     }
 };
 } // namespace mdb
