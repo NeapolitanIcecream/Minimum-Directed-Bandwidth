@@ -137,7 +137,7 @@ VertexPtr CreateVertexPtr() {
 
 class Graph {
 public:
-    std::vector<Vertex::VertexPtr> vertices;
+    std::vector<VertexPtr> vertices;
 
     Graph(uint32_t n) {
         for (uint32_t i = 0; i < n; i++) {
