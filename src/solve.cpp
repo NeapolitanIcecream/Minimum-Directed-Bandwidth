@@ -1,23 +1,23 @@
 #include "vertex.h"
 
-std::vector<Graph::VertexPtr> graph;
-std::deque<Graph::VertexPtr> visitedButHasUnvisitedNext;
-std::vector<Graph::VertexPtr> visited;
+std::vector<mdb::VertexPtr> graph;
+std::deque<mdb::VertexPtr> visitedButHasUnvisitedNext;
+std::vector<mdb::VertexPtr> visited;
 const uint32_t maxBandwidth = 8;
 void CheckCopy(uint32_t order);
-void Visit(Graph::VertexPtr v);
+void Visit(mdb::VertexPtr v);
 
 void CheckCopy(uint32_t order) {
     auto checkOrder = order - maxBandwidth + 1;
     if (checkOrder >= 0 && visited[checkOrder] == visitedButHasUnvisitedNext.front() &&
         visitedButHasUnvisitedNext.front()->MoreThanOneNextUnvisited()) {
-        auto copy = Graph::Copy(visitedButHasUnvisitedNext.front());
+        auto copy = mdb::Copy(visitedButHasUnvisitedNext.front());
         visitedButHasUnvisitedNext.pop_front();
         Visit(copy);
     }
 }
 
-void Visit(Graph::VertexPtr v) {
+void Visit(mdb::VertexPtr v) {
     v->Visit();
     visited.push_back(v);
     if (!v->AllNextVisited()) {

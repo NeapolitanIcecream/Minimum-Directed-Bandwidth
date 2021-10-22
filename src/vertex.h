@@ -3,7 +3,7 @@
 #include <iostream>
 #include <queue>
 
-namespace Graph {
+namespace mdb {
 class Vertex {
 public:
     uint32_t id;
@@ -89,6 +89,8 @@ public:
 
 typedef std::shared_ptr<Vertex> VertexPtr;
 
+namespace {
+
 void RemovePrev(VertexPtr v, VertexPtr prev) {
     for (auto i = v->prev.begin(); i != v->prev.end(); i++) {
         if (*i == prev) {
@@ -131,11 +133,26 @@ VertexPtr CreateVertexPtr() {
     return result;
 }
 
-std::vector<Graph::VertexPtr> CreateGraph(uint32_t n) {
-    std::vector<Graph::VertexPtr> result;
-    for (uint32_t i = 0; i < n; i++) {
-        result.push_back(CreateVertexPtr());
+} // namespace
+
+class Graph {
+public:
+    std::vector<Vertex::VertexPtr> vertices;
+
+    Graph(uint32_t n) {
+        for (uint32_t i = 0; i < n; i++) {
+            vertices.push_back(CreateVertexPtr());
+        }
     }
-    return result;
-}
-} // namespace graph
+
+    void Print() {
+        for (auto v : vertices) {
+            v->Print();
+        }
+    }
+
+    void AddEdge(uint32_t v1, uint32_t v2) {
+        AddEdge(vertices[v1], vertices[v2]);
+    }
+};
+} // namespace mdb
