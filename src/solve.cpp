@@ -1,4 +1,5 @@
 #include "vertex.h"
+#include <dueue>
 
 std::vector<mdb::VertexPtr> graph;
 std::deque<mdb::VertexPtr> visitedButHasUnvisitedNext;

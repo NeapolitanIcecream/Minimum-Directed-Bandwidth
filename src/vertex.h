@@ -1,7 +1,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
-#include <queue>
+#include <list>
 
 namespace mdb {
 class Vertex {
@@ -135,12 +135,14 @@ VertexPtr CreateVertexPtr() {
 
 } // namespace
 
+template< std::size_t N >
 class Graph {
 public:
     std::vector<VertexPtr> vertices;
+    std::list<VertexPtr> visitedVertices;
 
-    Graph(uint32_t n) {
-        for (uint32_t i = 0; i < n; i++) {
+    Graph() {
+        for (uint32_t i = 0; i < N; i++) {
             vertices.push_back(CreateVertexPtr());
         }
     }
@@ -151,8 +153,37 @@ public:
         }
     }
 
+    void Print(uint32_t id) {
+        vertices[id]->Print();
+    }
+
+    std::vector<std::shared_ptr<Vertex>> GetUnvisitedNext(uint32_t id) {
+        return vertices[id]->GetUnvisitedNext();
+    }
+
+    void Visit(uint32_t id) {
+        vertices[id]->Visit();
+        visitedVertices.push_back(vertices[id]);
+    }
+
     void AddEdge(uint32_t v1, uint32_t v2) {
         mdb::AddEdge(vertices[v1], vertices[v2]);
+    }
+
+    void AllNextVisited(uint32_t id) {
+        vertices[id]->AllNextVisited();
+    }
+
+    void OneNextUnvisited(uint32_t id) {
+        vertices[id]->OneNextUnvisited();
+    }
+
+    void MoreThanOneNextUnvisited(uint32_t id) {
+        vertices[id]->MoreThanOneNextUnvisited();
+    }
+
+    void AllPrevVisited(uint32_t id) {
+        vertices[id]->AllPrevVisited();
     }
 
     void Copy(uint32_t v) {
