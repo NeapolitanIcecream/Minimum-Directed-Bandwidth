@@ -125,4 +125,17 @@ VertexPtr Copy(VertexPtr v) {
     v->AddNext(result);
     return result;
 }
+
+VertexPtr CreateVertexPtr() {
+    VertexPtr result(new Vertex());
+    return result;
+}
+
+std::vector<Graph::VertexPtr> CreateGraph(uint32_t n) {
+    std::vector<Graph::VertexPtr> result;
+    for (uint32_t i = 0; i < n; i++) {
+        result.push_back(CreateVertexPtr());
+    }
+    return result;
+}
 } // namespace graph
