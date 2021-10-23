@@ -24,6 +24,7 @@ public:
         id = idCounter++;
         visited = false;
         order = -1;
+        unvisitedNextCount = 0;
     }
 
     void AddPrev(std::shared_ptr<Vertex> v) {
@@ -101,6 +102,10 @@ public:
     bool IsFalseActive() {
         return OneNextUnvisited();
     }
+
+    bool HasVisited() {
+      return visited;
+    }
 };
 
 typedef std::shared_ptr<Vertex> VertexPtr;
@@ -176,6 +181,10 @@ public:
         for (auto v : vertices) {
             GetSubtreeScore(v);
         }
+    }
+
+    std::vector<VertexPtr>& GetAllVertexPtr() {
+      return vertices;
     }
 
     uint64_t GetSubtreeScore(VertexPtr v) {
@@ -338,6 +347,12 @@ public:
 
     void AllPrevVisited(uint32_t id) {
         vertices[id]->AllPrevVisited();
+    }
+
+    void Dump() {
+      for (auto &v : visitedVertices) {
+        v->Print();
+      }
     }
 
     uint32_t Copy(uint32_t v) {
