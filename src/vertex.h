@@ -219,7 +219,7 @@ public:
         return activeVertices[result]->id;
     }
 
-    uint64_t CalculateVisitScore(VertexPtr v) {
+    double CalculateVisitScore(VertexPtr v) {
         static const uint64_t orderFactor = maxBandwidth * maxBandwidth;
         static const uint64_t subtreeFactor = 1;
         return (globalOrder - v->order) * orderFactor - subtreeScore[v] * subtreeFactor;
@@ -227,7 +227,7 @@ public:
 
     uint32_t ChooseWhoseChildren2VisitBase() {
         uint32_t result = 0;
-        uint32_t currentScore = CalculateVisitScore(activeVertices[0]);
+        double currentScore = CalculateVisitScore(activeVertices[0]);
         for (auto i = 1; i < activeCount; i++) {
             auto newScore = CalculateVisitScore(activeVertices[i]);
             if (newScore > currentScore) {
@@ -240,7 +240,7 @@ public:
 
     uint32_t ChooseWhoseChildren2Visit() {
         if (NeedCopy(activeVertices[0])) {
-            return Copy(activeVertices[0]->id);
+            return activeVertices[0]->id;
         }
         if (NeedReduce()) {
             auto result = ChooseWhoseChildren2VisitFalseActive();
@@ -250,6 +250,19 @@ public:
             return ChooseWhoseChildren2Visit4Reduce();
         }
         return ChooseWhoseChildren2VisitBase();
+    }
+
+    // The subtreeScore of the copy node is trickily designed to be 0, so it will always be accessed first, as expected.
+    uint32_t ChooseWhich2Visit(VertexPtr parent) {
+        uint64_t minSubtreeScore = std::__libcpp_numeric_limits<uint64_t>::max();
+        uint32_t result = 0;
+        for (auto i : parent->next) {
+            if (!i->visited && subtreeScore[i] < minSubtreeScore) {
+                minSubtreeScore = subtreeScore[i];
+                result = i->id;
+            }
+        }
+        return result;
     }
 
     // If a node has more than one unvisited children and its ordinal number is globalOrder - maxBandwidth, it has to be copied
