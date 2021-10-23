@@ -2,6 +2,8 @@
 #include <vector>
 #include <iostream>
 #include <list>
+#include <optional>
+#include <unordered_map>
 
 namespace mdb {
 class Vertex {
@@ -14,8 +16,8 @@ public:
     uint32_t unvisitedNextCount;
 
     Vertex() {
-        static uint32_t id_counter = 0;
-        id = id_counter++;
+        static uint32_t idCounter = 0;
+        id = idCounter++;
         visited = false;
         order = -1;
     }
@@ -85,6 +87,16 @@ public:
         }
         return true;
     }
+
+    // Accessing a child of a truly active node does not reduce the number of active nodes
+    bool IsTrueActive() {
+        return MoreThanOneNextUnvisited();
+    }
+
+    // Accessing a child of a false active node does not increase the number of active nodes
+    bool IsFalseActive() {
+        return OneNextUnvisited();
+    }
 };
 
 typedef std::shared_ptr<Vertex> VertexPtr;
@@ -135,17 +147,129 @@ VertexPtr CreateVertexPtr() {
 
 } // namespace
 
-template< std::size_t N >
 class Graph {
 public:
+    uint32_t vertexCount;
     std::vector<VertexPtr> vertices;
-    std::list<VertexPtr> visitedVertices;
+    std::vector<VertexPtr> visitedVertices;
+    std::vector<VertexPtr> activeVertices;
+    std::unordered_map<VertexPtr, uint32_t> vertexAncestorsCount;
+    std::unordered_map<VertexPtr, uint64_t> subtreeScore;
+    uint32_t maxBandwidth;
+    uint32_t activeCount;
+    uint32_t globalOrder;
 
-    Graph() {
-        vertices.reserve(N);
-        for (uint32_t i = 0; i < N; i++) {
+    Graph(uint32_t vertexCount, uint32_t maxBandwidth) : vertexCount(vertexCount), maxBandwidth(maxBandwidth) {
+        vertices.reserve(vertexCount);
+        for (uint32_t i = 0; i < vertexCount; i++) {
             vertices.push_back(CreateVertexPtr());
         }
+        activeCount = 0;
+        globalOrder = 0;
+    }
+
+    void BuildSubtreeScore() {
+        for (auto v : vertices) {
+            GetSubtreeScore(v);
+        }
+    }
+
+    uint64_t GetSubtreeScore(VertexPtr v) {
+        if (subtreeScore.count(v) != 0) {
+            return subtreeScore[v];
+        }
+        uint64_t result = 0;
+        vertexAncestorsCount[v] = 0;
+        for (auto i : v->prev) {
+            vertexAncestorsCount[v] += vertexAncestorsCount[i];
+        }
+        for (auto i : v->next) {
+            bool allAncestorsCounted = true;
+            for (auto j : v->prev) {
+                if (vertexAncestorsCount.count(j) == 0) {
+                    allAncestorsCounted = false;
+                    break;
+                }
+            }
+            if (allAncestorsCounted) {
+                result += GetSubtreeScore(i);
+            }
+        }
+        result += vertexAncestorsCount[v];
+        subtreeScore[v] = result;
+        return result;
+    }
+
+    std::optional<uint32_t> ChooseWhoseChildren2VisitFalseActive() {
+        for (auto i : activeVertices) {
+            if (i->IsFalseActive()) {
+                return { i->id };
+            }
+        }
+        return std::nullopt;
+    }
+
+    uint32_t ChooseWhoseChildren2Visit4Reduce() {
+        uint32_t result = 0;
+        for (auto i = 0; i < activeCount; i++) {
+            if (subtreeScore[activeVertices[i]] < subtreeScore[activeVertices[result]]) {
+                result = i;
+            }
+        }
+        return activeVertices[result]->id;
+    }
+
+    uint64_t CalculateVisitScore(VertexPtr v) {
+        static const uint64_t orderFactor = maxBandwidth * maxBandwidth;
+        static const uint64_t subtreeFactor = 1;
+        return (globalOrder - v->order) * orderFactor - subtreeScore[v] * subtreeFactor;
+    }
+
+    uint32_t ChooseWhoseChildren2VisitBase() {
+        uint32_t result = 0;
+        uint32_t currentScore = CalculateVisitScore(activeVertices[0]);
+        for (auto i = 1; i < activeCount; i++) {
+            auto newScore = CalculateVisitScore(activeVertices[i]);
+            if (newScore > currentScore) {
+                result = i;
+                currentScore = newScore;
+            }
+        }
+        return activeVertices[result]->id;
+    }
+
+    uint32_t ChooseWhoseChildren2Visit() {
+        if (NeedCopy(activeVertices[0])) {
+            return Copy(activeVertices[0]->id);
+        }
+        if (NeedReduce()) {
+            auto result = ChooseWhoseChildren2VisitFalseActive();
+            if (result.has_value()) {
+                return result.value();
+            }
+            return ChooseWhoseChildren2Visit4Reduce();
+        }
+        return ChooseWhoseChildren2VisitBase();
+    }
+
+    // If a node has more than one unvisited children and its ordinal number is globalOrder - maxBandwidth, it has to be copied
+    bool NeedCopy(VertexPtr v) {
+        return v->MoreThanOneNextUnvisited() && v->order == globalOrder - maxBandwidth;
+    }
+
+    // Determine if the number of active nodes needs to be reduced
+    bool NeedReduce() {
+        return activeCount >= maxBandwidth / 2;
+    }
+
+    // Accessing a child of a truly active node does not reduce the number of active nodes
+    bool IsTrueActive(uint32_t vertexId) {
+        return vertices[vertexId]->MoreThanOneNextUnvisited();
+    }
+
+    // Accessing a child of a false active node does not increase the number of active nodes
+    bool IsFalseActive(uint32_t vertexId) {
+        return vertices[vertexId]->OneNextUnvisited();
     }
 
     void Print() {
@@ -158,13 +282,24 @@ public:
         vertices[id]->Print();
     }
 
-    std::vector<std::shared_ptr<Vertex>> GetUnvisitedNext(uint32_t id) {
+    std::vector<VertexPtr> GetUnvisitedNext(uint32_t id) {
         return vertices[id]->GetUnvisitedNext();
     }
 
     void Visit(uint32_t id) {
         vertices[id]->Visit();
         visitedVertices.push_back(vertices[id]);
+        globalOrder++;
+        for (auto v : vertices[id]->prev) {
+            if (v->AllNextVisited()) {
+                activeVertices.erase(std::find(activeVertices.begin(), activeVertices.end(), v));
+                activeCount--;
+            }
+        }
+        if (!vertices[id]->AllNextVisited()) {
+            activeVertices.push_back(vertices[id]);
+            activeCount++;
+        }
     }
 
     void AddEdge(uint32_t v1, uint32_t v2) {
@@ -187,8 +322,10 @@ public:
         vertices[id]->AllPrevVisited();
     }
 
-    void Copy(uint32_t v) {
-        vertices.push_back(mdb::Copy(vertices[v]));
+    uint32_t Copy(uint32_t v) {
+        auto result = mdb::Copy(vertices[v]);
+        vertices.push_back(result);
+        return result->id;
     }
 };
 } // namespace mdb
