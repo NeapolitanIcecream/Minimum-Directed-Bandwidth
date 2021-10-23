@@ -8,32 +8,7 @@
 GraphPtr FixedGraphBuilder::BuildGraph(uint32_t maxBandWidth) const {
     GraphPtr graph(new mdb::Graph(instuctionManager->GetSize(), maxBandWidth));
     uint32_t idx = 0;
-    auto visitor = [&graph, &idx](const std::string &instruct) {
-//        size_t isGetInstruct = instruct.find("GET");
-//        if (isGetInstruct != std::string::npos) {
-//            idx++;
-//            return;
-//        }
-//        size_t isSetInstruct = instruct.find("SET");
-//        if (isSetInstruct != std::string::npos) {
-//            size_t biasIndex = instruct.find("t#");
-//            if (biasIndex == std::string::npos) {
-//                std::cout << "SET instruction doesn't give a bias" << std::endl;
-//                std::exit(-1);
-//            }
-//            size_t biasStart = biasIndex + 2;
-//            std::string biasStr = "";
-//            for (size_t i = biasStart; i != instruct.size() && (instruct[i] >= '0' && instruct[i] <= '9'); ++i) {
-//                biasStr.push_back(instruct[i]);
-//            }
-//            std::stringstream ss;
-//            ss << biasStr;
-//            uint32_t bias = 0;
-//            ss >> bias;
-//            graph->AddEdge(idx - bias, idx);
-//            idx++;
-//            return;
-//        }
+    std::function<void(const std::string&)> visitor = [&graph, &idx](const std::string &instruct) {
         size_t current = idx++;
         size_t biasIndex = instruct.find("t#");
         if (biasIndex == std::string::npos) {
@@ -48,7 +23,7 @@ GraphPtr FixedGraphBuilder::BuildGraph(uint32_t maxBandWidth) const {
         ss << biasStr;
         uint32_t bias = 0;
         ss >> bias;
-        graph->AddEdge(current, current - bias);
+        graph->AddEdge(current - bias, current);
         std::string subStr = instruct.substr(biasStart, instruct.size() - biasStart);
         biasIndex = subStr.find("t#");
         if (biasIndex == std::string::npos) {
@@ -56,14 +31,16 @@ GraphPtr FixedGraphBuilder::BuildGraph(uint32_t maxBandWidth) const {
         }
         biasStart = biasIndex + 2;
         biasStr = "";
-        for (size_t i = biasStart; i != instruct.size() && (instruct[i] >= '0' && instruct[i] <= '9'); ++i) {
-            biasStr.push_back(instruct[i]);
+        for (size_t i = biasStart; i != subStr.length() && (subStr[i] >= '0' && subStr[i] <= '9'); ++i) {
+            biasStr.push_back(subStr[i]);
         }
-        ss << biasStr;
+        std::stringstream ss1;
+        ss1 << biasStr;
         bias = 0;
-        ss >> bias;
-        graph->AddEdge(current, current - bias);
+        ss1 >> bias;
+        graph->AddEdge(current - bias, current);
     };
+    instuctionManager->ForEachInstruction(visitor);
     return graph;
 }
 

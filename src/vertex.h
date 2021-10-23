@@ -1,10 +1,14 @@
+#ifndef SRC_VERTEX_H
+#define SRC_VERTEX_H
+
 #include <memory>
 #include <vector>
 #include <iostream>
 #include <list>
 #include <optional>
 #include <unordered_map>
-
+#include <algorithm>
+#
 namespace mdb {
 class Vertex {
 public:
@@ -343,3 +347,4 @@ public:
     }
 };
 } // namespace mdb
+#endif

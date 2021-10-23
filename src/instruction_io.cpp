@@ -37,4 +37,3 @@ void OutputInstructionManager::DumpToFile(const std::string &fileName) const {
     }
     file.close();
 }
-

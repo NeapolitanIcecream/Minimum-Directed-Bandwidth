@@ -8,7 +8,7 @@ class InstructionManager {
 public:
     InstructionManager() = default;
     InstructionManager(const std::vector<std::string> &instructSet) : instructions(instructSet) {}
-    void ForEachInstruction(std::function<void(const std::string&)> &visitor) {
+    void ForEachInstruction(std::function<void(const std::string&)> &visitor) const {
         for (auto &instruct : instructions) {
             visitor(instruct);
         }
@@ -16,10 +16,12 @@ public:
     size_t GetSize() const {
         return instructions.size();
     }
+    std::vector<std::string> getInstruction() { return instructions;}
 
 protected:
     std::vector<std::string> instructions;
 };
+
 class InputInstructionManager : public InstructionManager {
 public:
     InputInstructionManager(std::vector<std::string> &instructSet) : InstructionManager(instructSet) {}

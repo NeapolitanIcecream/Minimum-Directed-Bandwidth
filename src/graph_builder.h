@@ -4,6 +4,7 @@
 
 #ifndef SRC_GRAPH_BUILDER_H
 #define SRC_GRAPH_BUILDER_H
+#include <vector>
 #include "instruction_io.h"
 #include "vertex.h"
 
@@ -24,9 +25,9 @@ private:
 
 class FixedGraphBuilder : public GraphBuilder {
 public:
-    explicit FixedGraphBuilder(std::shared_ptr<InstructionManager> &instructions) : instuctionManager(instructions) {}
+    explicit FixedGraphBuilder(InstructionManager &instructions) : instuctionManager(&instructions) {}
     GraphPtr BuildGraph(uint32_t maxBandWidth) const override;
 private:
-    std::shared_ptr<InstructionManager> instuctionManager;
+    InstructionManager *instuctionManager;
 };
 #endif //SRC_GRAPH_BUILDER_H
