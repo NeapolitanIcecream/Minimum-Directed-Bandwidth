@@ -240,6 +240,7 @@ public:
 
     uint32_t ChooseWhoseChildren2Visit() {
         if (NeedCopy(activeVertices[0])) {
+            Copy(activeVertices[0]);
             return activeVertices[0]->id;
         }
         if (NeedReduce()) {
