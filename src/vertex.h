@@ -135,13 +135,12 @@ VertexPtr CreateVertexPtr() {
 
 } // namespace
 
-template< std::size_t N >
 class Graph {
 public:
     std::vector<VertexPtr> vertices;
     std::list<VertexPtr> visitedVertices;
 
-    Graph() {
+    Graph(size_t N) {
         vertices.reserve(N);
         for (uint32_t i = 0; i < N; i++) {
             vertices.push_back(CreateVertexPtr());
