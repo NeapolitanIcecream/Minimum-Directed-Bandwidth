@@ -26,14 +26,19 @@ void InputInstructionManager::ResolveFile(const std::string &fileName) {
 #endif
 }
 
-void OutputInstructionManager::DumpToFile(const std::string &fileName) const {
+void OutputInstructionManager::DumpToFile(const std::string &fileName) {
     std::ofstream file(fileName, std::ios::out);
     if (!file.is_open()) {
         std::cout << "write instructions file fail\n";
         std::exit(-1);
     }
-    for (auto &instruct : instructions) {
-        file << instruct << std::endl;
-    }
+    std::function<void(const mdb::VertexPtr&)> visitor = [&file, this](const mdb::VertexPtr &vertex) {
+        if (vertex->id < instructions.size()) {
+            file << instructions[vertex->id] << std::endl;
+        } else {
+            file << "COPY " << " t#" << (vertex->order - vertex->prev[0]->order) << std::endl;
+        }
+    };
+    graph.ForeachVisitedVertex(visitor);
     file.close();
 }

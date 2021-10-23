@@ -172,6 +172,12 @@ public:
         globalOrder = 0;
     }
 
+    void ForeachVisitedVertex(const std::function<void(const VertexPtr&)> &visitor) {
+        for (auto &vertex : visitedVertices) {
+            visitor(vertex);
+        }
+    }
+
     void BuildSubtreeScore() {
         for (auto v : vertices) {
             GetSubtreeScore(v);
