@@ -4,10 +4,9 @@
 #include <sstream>
 #include "graph_builder.h"
 #include <random>
-#include <set>
 #include <queue>
-GraphPtr FixedGraphBuilder::BuildGraph() const {
-    GraphPtr graph(new mdb::Graph(instuctionManager->GetSize()));
+GraphPtr FixedGraphBuilder::BuildGraph(uint32_t maxBandWidth) const {
+    GraphPtr graph(new mdb::Graph(instuctionManager->GetSize(), maxBandWidth));
     uint32_t idx = 0;
     auto visitor = [&graph, &idx](const std::string &instruct) {
 //        size_t isGetInstruct = instruct.find("GET");
@@ -68,12 +67,12 @@ GraphPtr FixedGraphBuilder::BuildGraph() const {
     return graph;
 }
 
-GraphPtr RandomGraphBuilder::BuildGraph() const {
+GraphPtr RandomGraphBuilder::BuildGraph(uint32_t maxBandWidth) const {
     if (nodeNum < expectRootNum) {
         std::cout << "node num is too small\n";
         std::exit(-1);
     }
-    GraphPtr graph(new mdb::Graph(nodeNum));
+    GraphPtr graph(new mdb::Graph(nodeNum, maxBandWidth));
     for (uint32_t i = 0; i < nodeNum - expectRootNum; ++i) {
         uint32_t current = nodeNum -1 - i;
         uint32_t parentsNum = (static_cast<uint32_t>(std::rand()) % 2) + 1;

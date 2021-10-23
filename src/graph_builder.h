@@ -10,13 +10,13 @@
 using GraphPtr = std::unique_ptr<mdb::Graph>;
 class GraphBuilder {
 public:
-    virtual GraphPtr BuildGraph() const = 0;
+    virtual GraphPtr BuildGraph(uint32_t maxBandWitdth) const = 0;
 };
 
 class RandomGraphBuilder : public GraphBuilder {
 public:
     RandomGraphBuilder(uint32_t node) : nodeNum(node) {}
-    GraphPtr BuildGraph() const override;
+    GraphPtr BuildGraph(uint32_t maxBandWidth) const override;
 private:
     static constexpr uint32_t expectRootNum = 10;
     uint32_t nodeNum = 0;
@@ -25,7 +25,7 @@ private:
 class FixedGraphBuilder : public GraphBuilder {
 public:
     explicit FixedGraphBuilder(std::shared_ptr<InstructionManager> &instructions) : instuctionManager(instructions) {}
-    GraphPtr BuildGraph() const override;
+    GraphPtr BuildGraph(uint32_t maxBandWidth) const override;
 private:
     std::shared_ptr<InstructionManager> instuctionManager;
 };
