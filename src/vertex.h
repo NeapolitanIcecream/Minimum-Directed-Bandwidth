@@ -240,7 +240,7 @@ public:
 
     uint32_t ChooseWhoseChildren2Visit() {
         if (NeedCopy(activeVertices[0])) {
-            Copy(activeVertices[0]);
+            Copy(activeVertices[0]->id);
             return activeVertices[0]->id;
         }
         if (NeedReduce()) {
@@ -255,7 +255,7 @@ public:
 
     // The subtreeScore of the copy node is trickily designed to be 0, so it will always be accessed first, as expected.
     uint32_t ChooseWhich2Visit(VertexPtr parent) {
-        uint64_t minSubtreeScore = std::__libcpp_numeric_limits<uint64_t>::max();
+        uint64_t minSubtreeScore = std::numeric_limits<uint64_t>::max();
         uint32_t result = 0;
         for (auto i : parent->next) {
             if (!i->visited && subtreeScore[i] < minSubtreeScore) {
