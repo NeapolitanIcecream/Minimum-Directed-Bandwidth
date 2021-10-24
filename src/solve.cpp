@@ -8,86 +8,44 @@
 using namespace std;
 using namespace mdb;
 
-void Visit(mdb::VertexPtr v, std::unique_ptr<mdb::Graph> &gptr);
-std::deque<mdb::VertexPtr> visitedButHasUnvisitedNext;
-
-void CheckCopy(uint32_t order, std::unique_ptr<mdb::Graph> &gptr) {
-  int32_t checkOrder = static_cast<int32_t>(order) - static_cast<int32_t>(gptr->maxBandwidth) + 1;
-  if (order == 4) {
-    std::cout << "zbh" << endl;
-  }
-  if (checkOrder >= 0 && gptr->visitedVertices[checkOrder]->MoreThanOneNextUnvisited()) {
-     auto copy = mdb::Copy(visitedButHasUnvisitedNext.front());
-     visitedButHasUnvisitedNext.pop_front();
-     Visit(copy, gptr);
-  }
-}
-
-void Visit(mdb::VertexPtr v, std::unique_ptr<mdb::Graph> &gptr) {
-  v->Visit();
-  gptr->visitedVertices.push_back(v);
-  if (!v->AllNextVisited()) {
-    visitedButHasUnvisitedNext.push_back(v);
-  }
-  CheckCopy(v->order, gptr);
-  while (!visitedButHasUnvisitedNext.empty()) {
-    bool found = false;
-    for (auto i : visitedButHasUnvisitedNext) {
-       for (auto j : i->GetUnvisitedNext()) {
-         if (j->AllPrevVisited()) {
-           Visit(j, gptr);
-           found = true;
-           break;
-         }
-       }
-       if (found) {
-         break;
-       }
-    }
-    if (!found) {
-      break;
-    }
-  }
-}
-
-void scheduling(std::unique_ptr<mdb::Graph> &gptr) {
-  while (true) {
-    bool changed = false;
-    for (auto &v : gptr->GetAllVertexPtr()) {
-      if (v->AllPrevVisited() && !v->HasVisited()) {
-        Visit(v, gptr);
-        changed = true;
-      }
-    }
-    if (!changed) {
-      break;
-    }
+void solve(GraphPtr gptr) {
+  gptr->initVirtualRoot();
+  auto virtualRoot = gptr->virtualRoot->id;
+  gptr->BuildSubtreeScore();
+  gptr->Visit(virtualRoot);
+  while (!gptr->activeVertices.empty()) {
+    auto visitWhoseChildrenId = gptr->ChooseWhoseChildren2Visit();
+    auto visitWhichId = gptr->ChooseWhich2Visit(visitWhoseChildrenId);
+    gptr->Visit(visitWhichId);
   }
 }
 
 int main() {
   string str;
-  cout << "Choose Fixed From file?";
+  cout << "Input from file? (y/n)";
   cin >> str;
   // Build Graph
-  if (str == "YES") {
+  if (str == "y") {
     string fileName;
     cout << "Input file name:" << std::endl;
     cin >> fileName;
     uint32_t bandWidth;
-    cout << "Input bit:" << std::endl;
+    cout << "Input max bandwidth:" << std::endl;
     cin >> bandWidth;
     InputInstructionManager newInput(*new InputInstructionManager(fileName));
     FixedGraphBuilder fg(newInput);
     GraphPtr gptr = fg.BuildGraph(bandWidth);
-    scheduling(gptr);
+    solve(gptr);
     gptr->Dump();
-  } else {
-    RandomGraphBuilder rg(20);
+  }
+  else {
+    RandomGraphBuilder rg(12);
     uint32_t bandWidth;
-    cout << "Input bit:" << std::endl;
+    cout << "Input max bandwidth:" << std::endl;
     cin >> bandWidth;
     GraphPtr gptr = rg.BuildGraph(bandWidth);
     gptr->Print();
+    solve(gptr);
+    gptr->Dump();
   }
 }
