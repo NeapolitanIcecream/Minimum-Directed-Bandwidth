@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include "vertex.h"
 #define IO_DEBUG (true)
 class InstructionManager {
 public:
@@ -34,7 +35,11 @@ private:
 
 class OutputInstructionManager : public InstructionManager {
 public:
-    OutputInstructionManager(std::vector<std::string> &instructSet) : InstructionManager(instructSet) {}
-    void DumpToFile(const std::string &fileName) const;
+    OutputInstructionManager(std::vector<std::string> &instructSet, mdb::Graph &grp)
+        : InstructionManager(instructSet),  graph(grp) {}
+    void DumpToFile(const std::string &fileName);
+private:
+    mdb::Graph &graph;
+
 };
 #endif // SRC_INSTRUCTIONIO_H

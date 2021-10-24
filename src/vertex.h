@@ -207,6 +207,12 @@ public:
         }
     }
 
+    void ForeachVisitedVertex(const std::function<void(const VertexPtr&)> &visitor) {
+        for (auto &vertex : visitedVertices) {
+            visitor(vertex);
+        }
+    }
+
     void BuildSubtreeScore() {
         for (auto v : vertices) {
             vertexAncestorsCount[v] = 1;
