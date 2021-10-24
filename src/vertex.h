@@ -149,14 +149,15 @@ VertexPtr Copy(VertexPtr v) {
     result->AddPrev(v);
     for (auto i = v->next.begin(); i != v->next.end();) {
         if (!(*i)->visited) {
-            v->next.erase(i);
-            RemovePrev(*i, v);
             AddEdge(result, *i);
+            RemovePrev(*i, v);
+            v->next.erase(i);
             continue;
         }
         i++;
     }
     v->AddNext(result);
+    v->unvisitedNextCount = 1;
     return result;
 }
 
@@ -371,6 +372,9 @@ public:
         visitedVertices.push_back(vertices[id]);
         globalOrder++;
         for (auto v : vertices[id]->prev) {
+            std::cout << "Check inactive: " << v->id << ' ' << v->unvisitedNextCount << ' ' << v->AllNextVisited() << std::endl;
+            std::flush(std::cout);
+            subtreeScore[v] -= subtreeScore[vertices[id]];
             if (v->AllNextVisited()) {
                 std::cout << "Inactive: " << v->id << std::endl;
                 std::flush(std::cout);
@@ -423,8 +427,8 @@ public:
         copyCount++;
         auto result = mdb::Copy(vertices[id]);
         vertices.push_back(result);
-        activeVertices.erase(std::find(activeVertices.begin(), activeVertices.end(), vertices[id]));
-        activeVertices.push_back(result);
+        // activeVertices.erase(std::find(activeVertices.begin(), activeVertices.end(), vertices[id]));
+        // activeVertices.push_back(result);
         return result->id;
     }
 };
