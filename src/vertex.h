@@ -291,31 +291,19 @@ public:
     uint32_t ChooseWhoseChildren2Visit() {
         if (NeedCopy(activeVertices[0])) {
             Copy(activeVertices[0]->id);
-            std::cout << "copy and choose " << activeVertices[0]->id << std::endl;
-            std::flush(std::cout);
             return activeVertices[0]->id;
         }
         if (NeedResolve(activeVertices[0])) {
-            std::cout << "NeedResolve " << activeVertices[0]->id << std::endl;
-            std::flush(std::cout);
             return activeVertices[0]->id;
         }
         if (NeedReduce()) {
             auto result = ChooseWhoseChildren2VisitFalseActive();
             if (result.has_value()) {
-                std::cout << "choose false active " << result.value() << std::endl;
-                std::flush(std::cout);
                 return result.value();
             }
-            auto result2 = ChooseWhoseChildren2Visit4Reduce();
-            std::cout << "reduce and choose " << result2 << std::endl;
-            std::flush(std::cout);
-            return result2;
+            return ChooseWhoseChildren2Visit4Reduce();
         }
-        auto result = ChooseWhoseChildren2VisitBase();
-        std::cout << "choose " << result << std::endl;
-        std::flush(std::cout);
-        return result;
+        return ChooseWhoseChildren2VisitBase();
     }
 
     // The subtreeScore of the copy node is trickily designed to be 0, so it will always be accessed first, as expected.
