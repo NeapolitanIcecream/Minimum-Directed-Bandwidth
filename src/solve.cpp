@@ -17,6 +17,9 @@ void solve(GraphPtr gptr) {
     auto visitWhoseChildrenId = gptr->ChooseWhoseChildren2Visit();
     auto visitWhichId = gptr->ChooseWhich2Visit(visitWhoseChildrenId);
     gptr->Visit(visitWhichId);
+    if (gptr->globalOrder > 40) {
+      return;
+    }
   }
 }
 
@@ -36,7 +39,7 @@ int main() {
     FixedGraphBuilder fg(newInput);
     GraphPtr gptr = fg.BuildGraph(bandWidth);
     solve(gptr);
-    gptr->Dump();
+    // gptr->Dump();
   }
   else {
     RandomGraphBuilder rg(12);

@@ -18,13 +18,15 @@ public:
     bool visited;
     uint32_t order;
     uint32_t unvisitedNextCount;
+    bool isVirtual;
 
-    Vertex() {
+    Vertex(bool isVirtual = false) {
         static uint32_t idCounter = 0;
         id = idCounter++;
         visited = false;
         order = -1;
         unvisitedNextCount = 0;
+        isVirtual = true;
     }
 
     void AddPrev(std::shared_ptr<Vertex> v) {
@@ -161,8 +163,8 @@ VertexPtr Copy(VertexPtr v) {
     return result;
 }
 
-VertexPtr CreateVertexPtr() {
-    VertexPtr result(new Vertex());
+VertexPtr CreateVertexPtr(bool isVirtual = false) {
+    VertexPtr result(new Vertex(isVirtual));
     return result;
 }
 
@@ -195,7 +197,7 @@ public:
     void initVirtualRoot() {
         std::cout << "initVirtualRoot" << std::endl;
         std::flush(std::cout);
-        virtualRoot = CreateVertexPtr();
+        virtualRoot = CreateVertexPtr(true);
         vertices.push_back(virtualRoot);
         for (auto v : vertices) {
             if (v->prev.size() == 0 && v != virtualRoot) {
